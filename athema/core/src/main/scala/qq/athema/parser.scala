@@ -91,11 +91,12 @@ object ExprParser {
     f: (Expr.Fixed[BigDecimal], Expr.Fixed[BigDecimal]) => Expr.Fixed[BigDecimal]
   ): StateT[FF, Output, Unit] =
     StateT.modifyF { output0 =>
-      val y = output0.head
-      val tail = output0.tail
-      val x = tail.head
-      val output1 = tail.tail
-      (f(x, y) :: output1).asRight
+      val (xy, output) = output0.splitAt(2)
+      xy match {
+        case y :: x :: Nil => (f(x, y) :: output).asRight
+        case x :: Nil      => "expected two operands for operator but only got one".asLeft
+        case Nil           => "expected two operands for operator but got none".asLeft
+      }
     }
 
   private def nullary(expr: Expr.Fixed[BigDecimal]): StateT[FF, Output, Unit] =

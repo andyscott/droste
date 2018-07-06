@@ -13,15 +13,24 @@ object ProjectPlugin extends AutoPlugin {
   object autoImport {
 
     def module(
-      modName: String,
-      prefix: String = "modules/"
+      modName: String
     ): CrossProject =
       CrossProject(
         modName,
-        file(s"$prefix$modName"),
+        file(s"modules/$modName"),
         CrossType.Pure
       )
         .settings(moduleName := s"${name.value}-$modName")
+
+    def athemaModule(
+      modName: String
+    ): CrossProject =
+      CrossProject(
+        s"athema-$modName",
+        file(s"athema/$modName"),
+        CrossType.Pure
+      )
+        .settings(moduleName := s"athema-$modName")
 
     lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
       publish := ((): Unit),

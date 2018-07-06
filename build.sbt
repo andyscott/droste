@@ -3,7 +3,8 @@ lazy val root = (project in file("."))
   .aggregate(coreJVM, coreJS)
   .aggregate(catsJVM, catsJS)
   .aggregate(testsJVM, testsJS)
-  .aggregate(athemaJVM, athemaJS)
+  .aggregate(athemaCoreJVM, athemaCoreJS)
+  .aggregate(athemaREPLJVM, athemaREPLJS)
 
 lazy val meta = module("meta")
   .settings(libraryDependencies ++= Seq(
@@ -32,7 +33,7 @@ lazy val catsJS  = cats.js
 
 lazy val tests = module("tests")
   .dependsOn(core)
-  .dependsOn(athema)
+  .dependsOn(athemaCore)
   .settings(noPublishSettings)
   .settings(libraryDependencies ++= Seq(
     "org.scalacheck" %%% "scalacheck" % "1.13.4",
@@ -41,7 +42,7 @@ lazy val tests = module("tests")
 lazy val testsJVM = tests.jvm
 lazy val testsJS  = tests.js
 
-lazy val athema = module("athema", prefix = "")
+lazy val athemaCore = athemaModule("core")
   .dependsOn(core)
   .settings(noPublishSettings)
   .settings(libraryDependencies ++=
@@ -53,6 +54,16 @@ lazy val athema = module("athema", prefix = "")
       "org.scalacheck" %%% "scalacheck" % "1.13.4"
     ).map(_ % "test"))
 
+lazy val athemaCoreJVM = athemaCore.jvm
+lazy val athemaCoreJS  = athemaCore.js
 
-lazy val athemaJVM = athema.jvm
-lazy val athemaJS  = athema.js
+lazy val athemaREPL = athemaModule("repl")
+  .dependsOn(athemaCore)
+  .settings(noPublishSettings)
+  .settings(libraryDependencies ++=
+    Seq(
+      "org.typelevel" %%% "cats-effect" % "1.0.0-RC2"
+    ))
+
+lazy val athemaREPLJVM = athemaREPL.jvm
+lazy val athemaREPLJS  = athemaREPL.js
