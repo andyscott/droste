@@ -2,7 +2,7 @@ package higherkindness.droste
 package tests
 
 import prelude._
-import data.Mu
+import higherkindness.droste.data.Mu
 import laws.BasisLaws
 import scalacheck._
 
@@ -17,7 +17,8 @@ final class MuTests extends Properties("Mu") {
     forAll((x: Mu[Option]) =>
       x match {
         case Mu(y) => y ?= Mu.un(x)
-    })
+      }
+    )
   }
 
   property("apply consistent with toFunctionK") = {

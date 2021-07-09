@@ -3,9 +3,9 @@ package higherkindness.droste
 import cats.~>
 import cats.Eq
 
-import data.Attr
-import data.Coattr
-import syntax.compose._
+import higherkindness.droste.data.Attr
+import higherkindness.droste.data.Coattr
+import higherkindness.droste.syntax.compose._
 
 object `package` {
 
@@ -60,7 +60,8 @@ object `package` {
 
   object RCoalgebraM {
     def apply[R, M[_], F[_], A](
-        f: A => M[F[Either[R, A]]]): RCoalgebraM[R, M, F, A] =
+        f: A => M[F[Either[R, A]]]
+    ): RCoalgebraM[R, M, F, A] =
       GCoalgebraM(f)
   }
 
@@ -89,9 +90,10 @@ object `package` {
 }
 
 object prelude {
-  implicit def drosteDelayedEq[Z, F[_]](
-      implicit p: Project[F, Z],
-      delay: Delay[Eq, F]): Eq[Z] = {
+  implicit def drosteDelayedEq[Z, F[_]](implicit
+      p: Project[F, Z],
+      delay: Delay[Eq, F]
+  ): Eq[Z] = {
     lazy val knot: Eq[Z] =
       Eq.instance((x, y) => delay(knot).eqv(p.coalgebra(x), p.coalgebra(y)))
     knot
@@ -99,8 +101,12 @@ object prelude {
 
   // todo: where should this live?
   implicit val drosteDelayEqOption: Delay[Eq, Option] =
-    λ[Eq ~> (Eq ∘ Option)#λ](eq =>
-      Eq.instance((x, y) =>
-        x.fold(y.fold(true)(_ => false))(xx =>
-          y.fold(false)(yy => eq.eqv(xx, yy)))))
+    new (Eq ~> (Eq ∘ Option)#λ) {
+      def apply[A](eq: Eq[A]): (Eq ∘ Option)#λ[A] =
+        Eq.instance((x, y) =>
+          x.fold(y.fold(true)(_ => false))(xx =>
+            y.fold(false)(yy => eq.eqv(xx, yy))
+          )
+        )
+    }
 }

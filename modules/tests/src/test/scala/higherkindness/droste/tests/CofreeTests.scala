@@ -2,8 +2,8 @@ package higherkindness.droste
 package tests
 
 import prelude._
-import data.prelude._
-import data.AttrF
+import higherkindness.droste.data.prelude._
+import higherkindness.droste.data.AttrF
 
 import cats.free.Cofree
 
@@ -17,5 +17,7 @@ final class CofreeTests extends Properties("Cofree") {
   include(
     BasisLaws.props[AttrF[Option, Int, *], Cofree[Option, Int]](
       "AttrF[Option, Int, *]",
-      "Cofree[Option, Int]"))
+      "Cofree[Option, Int]"
+    )
+  )
 }

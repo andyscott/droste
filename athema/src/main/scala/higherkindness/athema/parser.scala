@@ -45,7 +45,7 @@ object ExprParser {
           case TSub      => shunt(op, 1).flatMap(_.traverse(enqueue))
           case TProd     => shunt(op, 2).flatMap(_.traverse(enqueue))
           case TDiv      => shunt(op, 2).flatMap(_.traverse(enqueue))
-        }).as(tail.asLeft)
+        }).map(_ => tail.asLeft)
       case Nil =>
         for {
           s0 <- StateT.get[FF, SS]
@@ -87,7 +87,8 @@ object ExprParser {
   private def binary(
       f: (
           Expr.Fixed[BigDecimal],
-          Expr.Fixed[BigDecimal]) => Expr.Fixed[BigDecimal]
+          Expr.Fixed[BigDecimal]
+      ) => Expr.Fixed[BigDecimal]
   ): StateT[FF, Output, Unit] =
     StateT.modifyF { output0 =>
       val y       = output0.head

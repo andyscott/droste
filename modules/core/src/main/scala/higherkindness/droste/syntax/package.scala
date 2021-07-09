@@ -7,9 +7,9 @@ import cats.Monad
 import cats.kernel.Monoid
 import cats.kernel.Eq
 
-import data.AttrF
-import data.Fix
-import data.list._
+import higherkindness.droste.data.AttrF
+import higherkindness.droste.data.Fix
+import higherkindness.droste.data.list._
 
 object all
     extends ComposeSyntax
@@ -98,7 +98,8 @@ sealed trait FixSyntax {
 object FixSyntax {
   final class Ops[F[_], A](private val unfix: F[A]) extends AnyVal {
     def fix[G[a] >: F[a]](implicit ev: A =:= Fix[G]): Fix[G] = {
-      val _ = ev // suppress 'unused' warnings; can't use `nowarn` because the warning doesn't appear on all cross versions
+      val _ =
+        ev // suppress 'unused' warnings; can't use `nowarn` because the warning doesn't appear on all cross versions
       Fix(unfix.asInstanceOf[G[Fix[G]]])
     }
   }
@@ -116,8 +117,9 @@ object UnfixSyntax {
 }
 
 sealed trait EmbedSyntax {
-  implicit def toEmbedSyntaxOps[F[_], T](t: F[T])(
-      implicit E: Embed[F, T]): EmbedSyntax.Ops[F, T] =
+  implicit def toEmbedSyntaxOps[F[_], T](
+      t: F[T]
+  )(implicit E: Embed[F, T]): EmbedSyntax.Ops[F, T] =
     new EmbedSyntax.Ops[F, T] {
       def Embed = E
       def self  = t
@@ -134,16 +136,18 @@ object EmbedSyntax {
 }
 
 sealed trait ProjectSyntax {
-  implicit def toProjectSyntaxOps[F[_], T](t: T)(
-      implicit PFT: Project[F, T]): ProjectSyntax.ProjectOps[F, T] =
+  implicit def toProjectSyntaxOps[F[_], T](
+      t: T
+  )(implicit PFT: Project[F, T]): ProjectSyntax.ProjectOps[F, T] =
     new ProjectSyntax.ProjectOps[F, T] {
       def P    = PFT
       def self = t
     }
 
-  implicit def toFoldableProjectSyntaxOps[F[_], T](t: T)(
-      implicit PFT: Project[F, T],
-      FF: Foldable[F]): ProjectSyntax.ProjectFoldableOps[F, T] =
+  implicit def toFoldableProjectSyntaxOps[F[_], T](t: T)(implicit
+      PFT: Project[F, T],
+      FF: Foldable[F]
+  ): ProjectSyntax.ProjectFoldableOps[F, T] =
     new ProjectSyntax.ProjectFoldableOps[F, T] {
       def P    = PFT
       def F    = FF
@@ -172,8 +176,9 @@ object ProjectSyntax {
     def any(p: T => Boolean): Boolean =
       Project.any(self)(p)
 
-    def collect[U: Monoid, B](pf: PartialFunction[T, B])(
-        implicit U: Basis[ListF[B, *], U]): U =
+    def collect[U: Monoid, B](pf: PartialFunction[T, B])(implicit
+        U: Basis[ListF[B, *], U]
+    ): U =
       Project.collect[F, T, U, B](self)(pf)
 
     def contains(c: T)(implicit T: Eq[T]): Boolean =
@@ -183,7 +188,8 @@ object ProjectSyntax {
       Project.foldMap(self)(f)
 
     def foldMapM[M[_], Z](
-        f: T => M[Z])(implicit M: Monad[M], Z: Monoid[Z]): M[Z] =
+        f: T => M[Z]
+    )(implicit M: Monad[M], Z: Monoid[Z]): M[Z] =
       Project.foldMapM(self)(f)
   }
 }

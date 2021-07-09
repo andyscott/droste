@@ -39,11 +39,9 @@ final class MakeChange extends Properties("MakeChange") {
   // dyna is the same as an ana followed by a histo
   val solveFused = scheme.zoo.dyna(makeChangeAlgebra, toNatCoalgebra)
 
-  property("1 cent solutions") =
-    solve(toNat(1)) ?= Set(Penny :: Nil)
+  property("1 cent solutions") = solve(toNat(1)) ?= Set(Penny :: Nil)
 
-  property("2 cent solutions") =
-    solve(toNat(2)) ?= Set(Penny :: Penny :: Nil)
+  property("2 cent solutions") = solve(toNat(2)) ?= Set(Penny :: Penny :: Nil)
 
   property("3 cent solutions") =
     solve(toNat(3)) ?= Set(Penny :: Penny :: Penny :: Nil)
@@ -51,66 +49,54 @@ final class MakeChange extends Properties("MakeChange") {
   property("4 cent solutions") =
     solve(toNat(4)) ?= Set(Penny :: Penny :: Penny :: Penny :: Nil)
 
-  property("5 cent solutions") =
-    solve(toNat(5)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Nickle :: Nil
-    )
+  property("5 cent solutions") = solve(toNat(5)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Nickle :: Nil
+  )
 
-  property("6 cent solutions") =
-    solve(toNat(6)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Nickle :: Nil
-    )
+  property("6 cent solutions") = solve(toNat(6)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Nickle :: Nil
+  )
 
-  property("7 cent solutions") =
-    solve(toNat(7)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Penny :: Nickle :: Nil
-    )
+  property("7 cent solutions") = solve(toNat(7)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Penny :: Nickle :: Nil
+  )
 
-  property("8 cent solutions") =
-    solve(toNat(8)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Penny :: Penny :: Nickle :: Nil
-    )
+  property("8 cent solutions") = solve(toNat(8)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Penny :: Penny :: Nickle :: Nil
+  )
 
-  property("9 cent solutions") =
-    solve(toNat(9)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Penny :: Penny :: Penny :: Nickle :: Nil
-    )
+  property("9 cent solutions") = solve(toNat(9)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Penny :: Penny :: Penny :: Nickle :: Nil
+  )
 
-  property("10 cent solutions") =
-    solve(toNat(10)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Penny :: Penny :: Penny :: Penny :: Nickle :: Nil,
-      Nickle :: Nickle :: Nil,
-      Dime :: Nil
-    )
+  property("10 cent solutions") = solve(toNat(10)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Penny :: Penny :: Penny :: Penny :: Nickle :: Nil,
+    Nickle :: Nickle :: Nil,
+    Dime :: Nil
+  )
 
-  property("11 cent solutions") =
-    solve(toNat(11)) ?= Set(
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
-      Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nickle :: Nil,
-      Penny :: Nickle :: Nickle :: Nil,
-      Penny :: Dime :: Nil
-    )
+  property("11 cent solutions") = solve(toNat(11)) ?= Set(
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nil,
+    Penny :: Penny :: Penny :: Penny :: Penny :: Penny :: Nickle :: Nil,
+    Penny :: Nickle :: Nickle :: Nil,
+    Penny :: Dime :: Nil
+  )
 
-  property("num 10 cent solutions") =
-    solveFused(10).size ?= 4
+  property("num 10 cent solutions") = solveFused(10).size ?= 4
 
-  property("num 25 cent solutions") =
-    solveFused(25).size ?= 13
+  property("num 25 cent solutions") = solveFused(25).size ?= 13
 
-  property("num 50 cent solutions") =
-    solveFused(50).size ?= 50
+  property("num 50 cent solutions") = solveFused(50).size ?= 50
 
-  property("num 100 cent solutions") =
-    solveFused(100).size ?= 293
+  property("num 100 cent solutions") = solveFused(100).size ?= 293
 
-  property("num 200 cent solutions") =
-    solveFused(200).size ?= 2728
+  property("num 200 cent solutions") = solveFused(200).size ?= 2728
 }
 
 object MakeChange {
@@ -134,8 +120,9 @@ object MakeChange {
   object Nat {
     implicit val traverseForNat: Traverse[Nat] =
       new DefaultTraverse[Nat] {
-        def traverse[G[_]: Applicative, A, B](fa: Nat[A])(
-            f: A => G[B]): G[Nat[B]] =
+        def traverse[G[_]: Applicative, A, B](
+            fa: Nat[A]
+        )(f: A => G[B]): G[Nat[B]] =
           fa match {
             case Zero    => (Zero: Nat[B]).pure[G]
             case Next(a) => f(a).map(Next(_))
@@ -167,10 +154,10 @@ object MakeChange {
 
   val makeChangeAlgebra: CVAlgebra[Nat, Set[List[Coin]]] = CVAlgebra {
     case Next(attr) =>
-      val given = fromNat(attr.forget) + 1
+      val _given = fromNat(attr.forget) + 1
       val validCoins = allCoins
-        .takeWhile(_.value <= given)
-        .map(coin => coin -> (given - coin.value))
+        .takeWhile(_.value <= _given)
+        .map(coin => coin -> (_given - coin.value))
       val (zeros, toProcess) = validCoins.span(_._2 == 0)
       val zeroSolutions      = zeros.map(_._1 :: Nil).toSet
       val chainSolutions = toProcess

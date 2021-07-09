@@ -10,19 +10,15 @@ import cats.Semigroupal
 import cats.arrow.Arrow
 import cats.data.Cokleisli
 import cats.data.Kleisli
-import cats.syntax.applicative._
-import cats.syntax.coflatMap._
-import cats.syntax.comonad._
-import cats.syntax.flatMap._
-import cats.syntax.functor._
-import cats.syntax.semigroupal._
+import cats.syntax.all._
 
 final class GAlgebra[F[_], S, A](val run: F[S] => A) extends AnyVal {
   def apply(fs: F[S]): A =
     run(fs)
 
-  def zip[T, B](that: GAlgebra[F, T, B])(
-      implicit ev: Functor[F]): GAlgebra[F, (S, T), (A, B)] =
+  def zip[T, B](that: GAlgebra[F, T, B])(implicit
+      ev: Functor[F]
+  ): GAlgebra[F, (S, T), (A, B)] =
     GAlgebra.zip(this, that)
 
   def gather(gather: Gather[F, S, A]): GAlgebra.Gathered[F, S, A] =
@@ -31,12 +27,14 @@ final class GAlgebra[F[_], S, A](val run: F[S] => A) extends AnyVal {
   def lift[M[_]](implicit M: Applicative[M]): GAlgebraM[M, F, S, A] =
     GAlgebraM(fs => run(fs).pure[M])
 
-  def compose[Z](f: GAlgebra[F, Z, S])(
-      implicit F: CoflatMap[F]): GAlgebra[F, Z, A] =
+  def compose[Z](f: GAlgebra[F, Z, S])(implicit
+      F: CoflatMap[F]
+  ): GAlgebra[F, Z, A] =
     GAlgebra(fz => run(fz coflatMap f.run))
 
-  def andThen[B](f: GAlgebra[F, A, B])(
-      implicit F: CoflatMap[F]): GAlgebra[F, S, B] =
+  def andThen[B](f: GAlgebra[F, A, B])(implicit
+      F: CoflatMap[F]
+  ): GAlgebra[F, S, B] =
     f compose this
 
   def toCokleisli: Cokleisli[F, S, A] =
@@ -58,11 +56,13 @@ object GAlgebra extends GAlgebraInstances {
       algebra: GAlgebra[F, S, A],
       gather: Gather[F, S, A]
   ) {
-    def zip[B, T](that: Gathered[F, T, B])(
-        implicit ev: Functor[F]): Gathered[F, (S, T), (A, B)] =
+    def zip[B, T](
+        that: Gathered[F, T, B]
+    )(implicit ev: Functor[F]): Gathered[F, (S, T), (A, B)] =
       Gathered(
         GAlgebra.zip(algebra, that.algebra),
-        Gather.zip(gather, that.gather))
+        Gather.zip(gather, that.gather)
+      )
   }
 }
 
@@ -70,8 +70,8 @@ final class GAlgebraM[M[_], F[_], S, A](val run: F[S] => M[A]) extends AnyVal {
   def apply(fs: F[S]): M[A] =
     run(fs)
 
-  def zip[T, B](that: GAlgebraM[M, F, T, B])(
-      implicit M: Semigroupal[M],
+  def zip[T, B](that: GAlgebraM[M, F, T, B])(implicit
+      M: Semigroupal[M],
       F: Functor[F]
   ): GAlgebraM[M, F, (S, T), (A, B)] =
     GAlgebraM.zip(this, that)
@@ -94,13 +94,14 @@ object GAlgebraM {
       algebra: GAlgebraM[M, F, S, A],
       gather: Gather[F, S, A]
   ) {
-    def zip[B, T](that: Gathered[M, F, T, B])(
-        implicit M: Semigroupal[M],
+    def zip[B, T](that: Gathered[M, F, T, B])(implicit
+        M: Semigroupal[M],
         F: Functor[F]
     ): Gathered[M, F, (S, T), (A, B)] =
       Gathered(
         GAlgebraM.zip(algebra, that.algebra),
-        Gather.zip(gather, that.gather))
+        Gather.zip(gather, that.gather)
+      )
   }
 }
 
@@ -114,12 +115,14 @@ final class GCoalgebra[F[_], A, S](val run: A => F[S]) extends AnyVal {
   def lift[M[_]](implicit M: Applicative[M]): GCoalgebraM[M, F, A, S] =
     GCoalgebraM(a => run(a).pure[M])
 
-  def compose[Z](f: GCoalgebra[F, Z, A])(
-      implicit F: FlatMap[F]): GCoalgebra[F, Z, S] =
+  def compose[Z](f: GCoalgebra[F, Z, A])(implicit
+      F: FlatMap[F]
+  ): GCoalgebra[F, Z, S] =
     GCoalgebra(z => f(z) flatMap run)
 
-  def andThen[T](f: GCoalgebra[F, S, T])(
-      implicit F: FlatMap[F]): GCoalgebra[F, A, T] =
+  def andThen[T](f: GCoalgebra[F, S, T])(implicit
+      F: FlatMap[F]
+  ): GCoalgebra[F, A, T] =
     f compose this
 
   def toKleisli: Kleisli[F, A, S] =
@@ -169,11 +172,13 @@ private[droste] class GAlgebraArrow[F[_]: Comonad]
     GAlgebra(fa => f(fa.extract))
   def compose[A, B, C](
       f: GAlgebra[F, B, C],
-      g: GAlgebra[F, A, B]): GAlgebra[F, A, C] =
+      g: GAlgebra[F, A, B]
+  ): GAlgebra[F, A, C] =
     f compose g
   override def andThen[A, B, C](
       f: GAlgebra[F, A, B],
-      g: GAlgebra[F, B, C]): GAlgebra[F, A, C] =
+      g: GAlgebra[F, B, C]
+  ): GAlgebra[F, A, C] =
     f andThen g
   def first[A, B, C](f: GAlgebra[F, A, B]): GAlgebra[F, (A, C), (B, C)] =
     GAlgebra(fac => (f.run(fac.map(_._1)), fac.map(_._2).extract))
@@ -181,7 +186,8 @@ private[droste] class GAlgebraArrow[F[_]: Comonad]
 
 private[droste] sealed trait GCoalgebraInstances {
   implicit def drosteArrowForGCoalgebra[F[_]: Monad]: Arrow[
-    GCoalgebra[F, *, *]] =
+    GCoalgebra[F, *, *]
+  ] =
     new GCoalgebraArrow
 }
 
@@ -191,11 +197,13 @@ private[droste] class GCoalgebraArrow[F[_]: Monad]
     GCoalgebra(a => f(a).pure[F])
   def compose[A, B, C](
       f: GCoalgebra[F, B, C],
-      g: GCoalgebra[F, A, B]): GCoalgebra[F, A, C] =
+      g: GCoalgebra[F, A, B]
+  ): GCoalgebra[F, A, C] =
     f compose g
   override def andThen[A, B, C](
       f: GCoalgebra[F, A, B],
-      g: GCoalgebra[F, B, C]): GCoalgebra[F, A, C] =
+      g: GCoalgebra[F, B, C]
+  ): GCoalgebra[F, A, C] =
     f andThen g
   def first[A, B, C](fa: GCoalgebra[F, A, B]): GCoalgebra[F, (A, C), (B, C)] =
     GCoalgebra(ac => fa.run(ac._1).fproduct(_ => ac._2))

@@ -14,6 +14,12 @@ object ProjectPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
   override def requires: Plugins      = plugins.JvmPlugin
 
+  object ScalaV {
+    val v212 = "2.12.14"
+    val v213 = "2.13.6"
+    val v3   = "3.0.0"
+  }
+
   object autoImport {
 
     def module(
@@ -60,10 +66,6 @@ object ProjectPlugin extends AutoPlugin {
       micrositePushSiteWith := GitHub4s
     )
 
-    lazy val noScala213Settings: Seq[Def.Setting[_]] = Seq(
-      crossScalaVersions ~= (_.filterNot(_.startsWith("2.13")))
-    )
-
   }
 
   override def projectSettings: Seq[Def.Setting[_]] =
@@ -75,10 +77,23 @@ object ProjectPlugin extends AutoPlugin {
       outputStrategy := Some(StdoutOutput),
       run / connectInput := true,
       Global / cancelable := true,
-      crossScalaVersions := List("2.12.14", "2.13.6"),
-      scalaVersion := "2.12.14",
-      addCompilerPlugin(
-        "org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
+      crossScalaVersions := List(ScalaV.v212, ScalaV.v213, ScalaV.v3),
+      scalaVersion := ScalaV.v213,
+      libraryDependencies ++= on(2)(
+        compilerPlugin(
+          "org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full
+        )
+      ).value,
+      // Add some more source directories
+      Compile / unmanagedSourceDirectories ++= {
+        val sourceDir = (Compile / sourceDirectory).value
+        CrossVersion.partialVersion(scalaVersion.value) match {
+          case Some((3, _))  => Seq(sourceDir / "scala-2.13+")
+          case Some((2, 12)) => Seq()
+          case Some((2, _))  => Seq(sourceDir / "scala-2.13+")
+          case _             => Seq()
+        }
+      }
     ) ++ publishSettings
 
   lazy val publishSettings = Seq(
@@ -108,4 +123,27 @@ object ProjectPlugin extends AutoPlugin {
     )
   )
 
+  def on[A](major: Int, minor: Int)(a: A): Def.Initialize[Seq[A]] =
+    Def.setting {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some(v) if v == (major, minor) => Seq(a)
+        case _                              => Nil
+      }
+    }
+
+  def on[A](major: Int)(a: A): Def.Initialize[Seq[A]] =
+    Def.setting {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((`major`, _)) => Seq(a)
+        case _                  => Nil
+      }
+    }
+
+  def onVersion[A](major: Int)(a: String => A): Def.Initialize[Seq[A]] =
+    Def.setting {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((`major`, _)) => Seq(a(scalaVersion.value))
+        case _                  => Nil
+      }
+    }
 }

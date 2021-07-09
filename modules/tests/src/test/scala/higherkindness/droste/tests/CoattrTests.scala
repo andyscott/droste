@@ -1,7 +1,7 @@
 package higherkindness.droste
 package tests
 
-import data.Coattr
+import higherkindness.droste.data.Coattr
 import scalacheck._
 
 import org.scalacheck.Properties
@@ -17,6 +17,7 @@ final class CoattrTests extends Properties("Coattr") {
       x match {
         case Coattr.Pure(i)  => Coattr.un(x).left.toOption ?= Some(i)
         case Coattr.Roll(fi) => Coattr.un(x).toOption ?= Some(fi)
-    })
+      }
+    )
   }
 }

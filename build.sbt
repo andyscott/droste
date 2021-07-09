@@ -1,3 +1,7 @@
+import ProjectPlugin.ScalaV
+import ProjectPlugin.on
+import ProjectPlugin.onVersion
+
 lazy val root = (project in file("."))
   .settings(noPublishSettings)
   .aggregate(coreJVM, coreJS)
@@ -9,7 +13,9 @@ lazy val root = (project in file("."))
   .aggregate(testsJVM, testsJS)
   .aggregate(athemaJVM, athemaJS)
   .aggregate(readme)
-  .settings(crossScalaVersions := List()) // work around https://github.com/sbt/sbt/issues/4181
+  .settings(
+    crossScalaVersions := List()
+  ) // work around https://github.com/sbt/sbt/issues/4181
 
 lazy val publish = (project in file(".publish"))
   .settings(noPublishSettings)
@@ -22,7 +28,11 @@ lazy val publish = (project in file(".publish"))
   .aggregate(testsJVM, testsJS)
 
 lazy val coverage = (project in file(".coverage"))
-  .settings(noPublishSettings)
+  .settings(
+    noPublishSettings,
+    crossScalaVersions := Seq(ScalaV.v212, ScalaV.v213),
+    scalaVersion := ScalaV.v213
+  )
   .settings(coverageEnabled := true)
   .aggregate(coreJVM)
   .aggregate(metaJVM)
@@ -34,7 +44,7 @@ lazy val coverage = (project in file(".coverage"))
 lazy val V = new {
   val cats             = "2.6.1"
   val collectionCompat = "2.5.0"
-  val refined          = "0.9.15"
+  val refined          = "0.9.26"
   val algebra          = "2.2.3"
   val atto             = "0.9.5"
   val scalacheck       = "1.15.4"
@@ -44,10 +54,14 @@ lazy val V = new {
 lazy val meta = module("meta")
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value %%% moduleName.value % V.drostePrev),
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided")
+      organization.value %%% moduleName.value % V.drostePrev
+    ),
+    libraryDependencies ++= onVersion(2)(version =>
+      Seq(
+        "org.scala-lang" % "scala-reflect"  % version,
+        "org.scala-lang" % "scala-compiler" % version % "provided"
+      )
+    ).value.flatten
   )
 
 lazy val metaJVM = meta.jvm
@@ -57,31 +71,40 @@ lazy val core = module("core")
   .dependsOn(meta)
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value %%% moduleName.value % V.drostePrev),
+      organization.value %%% moduleName.value % V.drostePrev
+    ),
     mimaBinaryIssueFilters ++= {
       import com.typesafe.tools.mima.core.IncompatibleSignatureProblem
       import com.typesafe.tools.mima.core.ProblemFilters.exclude
       // See https://github.com/lightbend/mima/issues/423
       Seq(
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.Basis#Default.unapply"),
+          "higherkindness.droste.Basis#Default.unapply"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GAlgebra#Gathered.unapply"),
+          "higherkindness.droste.GAlgebra#Gathered.unapply"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GAlgebraArrow.algebra"),
+          "higherkindness.droste.GAlgebraArrow.algebra"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GAlgebraM#Gathered.unapply"),
+          "higherkindness.droste.GAlgebraM#Gathered.unapply"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GCoalgebra#Scattered.unapply"),
+          "higherkindness.droste.GCoalgebra#Scattered.unapply"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GCoalgebraArrow.algebra"),
+          "higherkindness.droste.GCoalgebraArrow.algebra"
+        ),
         exclude[IncompatibleSignatureProblem](
-          "higherkindness.droste.GCoalgebraM#Scattered.unapply")
+          "higherkindness.droste.GCoalgebraM#Scattered.unapply"
+        )
       )
     },
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % V.cats,
-      "org.typelevel" %%% "cats-free" % V.cats)
+      "org.typelevel" %%% "cats-free" % V.cats
+    )
   )
 
 lazy val coreJVM = core.jvm
@@ -91,9 +114,13 @@ lazy val macros = module("macros")
   .dependsOn(core)
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value %%% moduleName.value % V.drostePrev),
-    libraryDependencies ++= on(2, 12)(compilerPlugin(
-      "org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.patch)).value,
+      organization.value %%% moduleName.value % V.drostePrev
+    ),
+    libraryDependencies ++= on(2, 12)(
+      compilerPlugin(
+        "org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.patch
+      )
+    ).value,
     scalacOptions ++= on(2, 13)("-Ymacro-annotations").value
   )
 
@@ -102,20 +129,24 @@ lazy val macrosJS  = macros.js
 
 lazy val reftree = jvmModule("reftree")
   .dependsOn(coreJVM)
-  .settings(noScala213Settings)
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value                           %% moduleName.value % V.drostePrev),
-    libraryDependencies ++= Seq("io.github.stanch" %% "reftree"        % "1.4.0")
+      organization.value %% moduleName.value % V.drostePrev
+    ),
+    libraryDependencies ++= on(2, 12)(
+      "io.github.stanch" %% "reftree" % "1.4.0"
+    ).value
   )
 
 lazy val scalacheck = module("scalacheck")
   .dependsOn(core)
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value %%% moduleName.value % V.drostePrev),
+      organization.value %%% moduleName.value % V.drostePrev
+    ),
     libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % V.scalacheck)
+      "org.scalacheck" %%% "scalacheck" % V.scalacheck
+    )
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
@@ -125,9 +156,11 @@ lazy val laws = module("laws")
   .dependsOn(core)
   .settings(
     mimaPreviousArtifacts := Set(
-      organization.value %%% moduleName.value % V.drostePrev),
+      organization.value %%% moduleName.value % V.drostePrev
+    ),
     libraryDependencies ++= Seq(
-      "org.scalacheck" %%% "scalacheck" % V.scalacheck)
+      "org.scalacheck" %%% "scalacheck" % V.scalacheck
+    )
   )
 
 lazy val lawsJVM = laws.jvm
@@ -145,9 +178,14 @@ lazy val tests = module("tests")
       "eu.timepit"             %%% "refined-scalacheck"      % V.refined,
       "org.scala-lang.modules" %%% "scala-collection-compat" % V.collectionCompat % Test
     ),
-    libraryDependencies ++= on(2, 12)(compilerPlugin(
-      "org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.patch)).value,
-    scalacOptions ++= on(2, 13)("-Ymacro-annotations").value
+    libraryDependencies ++= on(2, 12)(
+      compilerPlugin(
+        "org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.patch
+      )
+    ).value,
+    scalacOptions ++= on(2, 13)("-Ymacro-annotations").value,
+    // 'nowarn' doesn't work on scala3 yet, make warnings not fatal.
+    scalacOptions --= on(3)("-Xfatal-warnings").value
   )
 
 lazy val testsJVM = tests.jvm
@@ -165,7 +203,10 @@ lazy val athema = module("athema", prefix = "")
       ) ++
         Seq(
           "org.scalacheck" %%% "scalacheck" % V.scalacheck
-        ).map(_ % "test"))
+        ).map(_ % "test"),
+    // 'nowarn' doesn't work on scala3 yet, make warnings not fatal.
+    scalacOptions --= on(3)("-Xfatal-warnings").value
+  )
 
 lazy val athemaJVM = athema.jvm
 lazy val athemaJS  = athema.js
@@ -184,8 +225,8 @@ lazy val readme = (project in file("modules/readme"))
 ///////////////
 
 lazy val docs = (project in file("docs"))
-  .dependsOn(coreJVM)
-  .dependsOn(athemaJVM)
+//  .dependsOn(coreJVM)
+//  .dependsOn(athemaJVM)
   .settings(moduleName := "droste-docs")
   .settings(micrositeSettings: _*)
   .settings(noPublishSettings: _*)
@@ -202,13 +243,5 @@ addCommandAlias(
   ";+clean;+test"
 )
 addCommandAlias("ci-docs", ";github;mdoc")
-
-def on[A](major: Int, minor: Int)(a: A): Def.Initialize[Seq[A]] =
-  Def.setting {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some(v) if v == (major, minor) => Seq(a)
-      case _                              => Nil
-    }
-  }
 
 ThisBuild / resolvers += Resolver.sonatypeRepo("public")

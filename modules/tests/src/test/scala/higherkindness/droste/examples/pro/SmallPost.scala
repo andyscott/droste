@@ -29,7 +29,7 @@ final class SmallPost extends Properties("SmallPost") {
         }
     }
 
-  implicit def streamFEmbed[A] = new Embed[StreamF[A, *], LazyList[A]] {
+  implicit def streamFEmbed[A]: Embed[StreamF[A, *], LazyList[A]] = new Embed[StreamF[A, *], LazyList[A]] {
     override def algebra = Algebra[StreamF[A, *], LazyList[A]] {
       case PrependF(head, tail) => head #:: tail.value
       case EmptyF               => LazyList.empty[A]
@@ -37,10 +37,12 @@ final class SmallPost extends Properties("SmallPost") {
   }
 
   def filterNT(lim: Int): StreamF[Int, *] ~> StreamF[Int, *] =
-    λ[StreamF[Int, *] ~> StreamF[Int, *]] {
-      case EmptyF                         => EmptyF
-      case t @ PrependF(h, _) if h <= lim => t
-      case PrependF(_, _)                 => EmptyF
+    new (StreamF[Int, *] ~> StreamF[Int, *]) {
+      def apply[A](s: StreamF[Int, A]): StreamF[Int, A] = s match {
+        case EmptyF                         => EmptyF
+        case t @ PrependF(h, _) if h <= lim => t
+        case PrependF(_, _)                 => EmptyF
+      }
     }
 
   val infiniteCoalg = Coalgebra[StreamF[Int, *], Int] { n =>
@@ -52,10 +54,8 @@ final class SmallPost extends Properties("SmallPost") {
       .postpro[StreamF[Int, *], Int, LazyList[Int]](infiniteCoalg, filterNT(10))
       .andThen(_.toList)
 
-  property("under limit") =
-    smallStream(7) ?= List(7, 8, 9, 10)
+  property("under limit") = smallStream(7) ?= List(7, 8, 9, 10)
 
-  property("over limit") =
-    smallStream(11) ?= Nil
+  property("over limit") = smallStream(11) ?= Nil
 
 }

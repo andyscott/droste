@@ -2,7 +2,7 @@ package higherkindness.droste
 package tests
 
 import prelude._
-import data.Nu
+import higherkindness.droste.data.Nu
 import laws.BasisLaws
 import scalacheck._
 
@@ -19,6 +19,7 @@ final class NuTests extends Properties("Nu") {
     forAll((x: Nu[Option]) =>
       x match {
         case Nu(y) => y === Nu.un(x)
-    })
+      }
+    )
   }
 }

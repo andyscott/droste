@@ -17,7 +17,9 @@ sealed abstract class Mu[F[_]] extends Serializable {
   def apply[A](fold: Algebra[F, A]): A
 
   def toFunctionK: Algebra[F, *] ~> Id =
-    λ[Algebra[F, *] ~> Id](Mu.this.apply(_))
+    new (Algebra[F, *] ~> Id) {
+      def apply[A](fa: Algebra[F, A]): Id[A] = Mu.this.apply(fa)
+    }
 }
 
 object Mu {
@@ -44,5 +46,6 @@ object Mu {
 
   implicit val drosteBasisSolveForMu: Basis.Solve.Aux[
     Mu,
-    λ[(F[_], α) => F[α]]] = null
+    ({ type L[F[_], A] = F[A] })#L
+  ] = null
 }
