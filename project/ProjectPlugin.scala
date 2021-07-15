@@ -78,7 +78,7 @@ object ProjectPlugin extends AutoPlugin {
       run / connectInput := true,
       Global / cancelable := true,
       crossScalaVersions := List(ScalaV.v212, ScalaV.v213, ScalaV.v3),
-      scalaVersion := ScalaV.v213,
+      scalaVersion := ScalaV.v3,
       libraryDependencies ++= on(2)(
         compilerPlugin(
           "org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full

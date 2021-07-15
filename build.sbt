@@ -121,6 +121,14 @@ lazy val macros = module("macros")
         "org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.patch
       )
     ).value,
+    // For some reason dependencies using `%%%` don't work with our 'on' method.
+    // They give 'error: Illegal dynamic dependency'
+    libraryDependencies ++=
+      (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) =>
+          Seq("org.typelevel" %%% "shapeless3-deriving" % "3.0.1")
+        case _ => Nil
+      }),
     scalacOptions ++= on(2, 13)("-Ymacro-annotations").value
   )
 
