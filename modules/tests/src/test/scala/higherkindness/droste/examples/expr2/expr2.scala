@@ -7,7 +7,7 @@ import org.scalacheck.Prop._
 import cats._
 import cats.syntax.all._
 
-import util.DefaultTraverse
+import higherkindness.droste.util.DefaultTraverse
 
 // demos recursion schemes between a regular AST and a fixed
 // point AST without using Fix
@@ -20,14 +20,11 @@ final class Expr2Checks extends Properties("Expr2") {
 
   val evaluate: Expr => BigDecimal = scheme.cata(evaluateAlgebra)
 
-  property("1") =
-    evaluate(Const(1)) ?= 1
+  property("1") = evaluate(Const(1)) ?= 1
 
-  property("1 + 1") =
-    evaluate(Add(Const(1), Const(1))) ?= 2
+  property("1 + 1") = evaluate(Add(Const(1), Const(1))) ?= 2
 
-  property("1 + 2 + 5") =
-    evaluate(Add(Add(Const(1), Const(2)), Const(5))) ?= 8
+  property("1 + 2 + 5") = evaluate(Add(Add(Const(1), Const(2)), Const(5))) ?= 8
 }
 
 sealed trait Expr
@@ -41,8 +38,9 @@ final case class AddF[A](x: A, y: A)          extends ExprF[A]
 object ExprF {
   implicit val traverseExprF: Traverse[ExprF] =
     new DefaultTraverse[ExprF] {
-      def traverse[G[_]: Applicative, A, B](fa: ExprF[A])(
-          f: A => G[B]): G[ExprF[B]] =
+      def traverse[G[_]: Applicative, A, B](
+          fa: ExprF[A]
+      )(f: A => G[B]): G[ExprF[B]] =
         fa match {
           case c: ConstF[B] @unchecked => (c: ExprF[B]).pure[G]
           case AddF(x, y)              => (f(x), f(y)).mapN(AddF(_, _))

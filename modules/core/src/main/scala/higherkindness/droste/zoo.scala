@@ -7,9 +7,10 @@ import cats.Monad
 import cats.free.Yoneda
 import cats.syntax.functor._
 
-import data.Attr
-import data.Coattr
-import data.prelude._
+import higherkindness.droste.data.Attr
+import higherkindness.droste.data.Coattr
+
+import higherkindness.droste.data.prelude._
 
 private[droste] trait Zoo {
 
@@ -26,7 +27,8 @@ private[droste] trait Zoo {
   )(implicit embed: Embed[F, R]): A => R =
     kernel.hyloC(
       embed.algebra.run.compose((frr: F[(R Either R)]) => frr.map(_.merge)),
-      coalgebra.run)
+      coalgebra.run
+    )
 
   /** A monadic version of an apomorphism.
     *
@@ -40,7 +42,8 @@ private[droste] trait Zoo {
         .lift[M]
         .run
         .compose((frr: F[(R Either R)]) => frr.map(_.merge)),
-      coalgebraM.run)
+      coalgebraM.run
+    )
 
   /** A variation of a catamorphism that gives you access to the input value at
     * every point in the computation.
@@ -66,7 +69,8 @@ private[droste] trait Zoo {
   )(implicit project: Project[F, R]): R => M[B] =
     kernel.hyloMC(
       algebraM.run,
-      project.coalgebra.lift[M].run.andThen(_.map(_.map(r => (r, r)))))
+      project.coalgebra.lift[M].run.andThen(_.map(_.map(r => (r, r))))
+    )
 
   /** Histomorphism
     *

@@ -2,8 +2,8 @@ package higherkindness.droste
 package tests
 
 import prelude._
-import data.prelude._
-import data.CoattrF
+import higherkindness.droste.data.prelude._
+import higherkindness.droste.data.CoattrF
 
 import cats.free.Free
 
@@ -17,6 +17,8 @@ final class FreeTests extends Properties("Free") {
   include(
     BasisLaws.props[CoattrF[Option, Int, *], Free[Option, Int]](
       "CoattrF[Option, Int, *]",
-      "Free[Option, Int]"))
+      "Free[Option, Int]"
+    )
+  )
 
 }

@@ -3,7 +3,7 @@ package higherkindness.droste
 import cats.Functor
 import cats.syntax.functor._
 
-import data.Attr
+import higherkindness.droste.data.Attr
 
 object Gather {
 
@@ -13,8 +13,9 @@ object Gather {
   def zygo[F[_]: Functor, A, B](algebra: Algebra[F, B]): Gather[F, (B, A), A] =
     (a, fa) => (algebra(fa.map(_._1)), a)
 
-  def para[F[_]: Functor, A, B](
-      implicit embed: Embed[F, B]): Gather[F, (B, A), A] =
+  def para[F[_]: Functor, A, B](implicit
+      embed: Embed[F, B]
+  ): Gather[F, (B, A), A] =
     zygo(embed.algebra)
 
   def histo[F[_], A]: Gather[F, Attr[F, A], A] =

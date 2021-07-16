@@ -2,7 +2,7 @@ package higherkindness.droste
 package tests
 
 import prelude._
-import data.Fix
+import higherkindness.droste.data.Fix
 import laws.BasisLaws
 import scalacheck._
 
@@ -17,6 +17,7 @@ final class FixTests extends Properties("Fix") {
     forAll((x: Fix[Option]) =>
       x match {
         case Fix(y) => y ?= Fix.un(x)
-    })
+      }
+    )
   }
 }

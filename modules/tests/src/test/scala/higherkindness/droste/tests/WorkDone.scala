@@ -4,8 +4,8 @@ package tests
 import org.scalacheck.Properties
 import org.scalacheck.Prop._
 
-import data.list._
-import data.:<
+import higherkindness.droste.data.list._
+import higherkindness.droste.data.:<
 
 final class WorkDone extends Properties("WorkDone") {
 
@@ -21,7 +21,7 @@ final class WorkDone extends Properties("WorkDone") {
   }
 
   property("cata vs gcata") = {
-    forAll { list: List[Unit] =>
+    forAll { (list: List[Unit]) =>
       val sf = new Sketch()
       val sg = new Sketch()
 
@@ -44,7 +44,7 @@ final class WorkDone extends Properties("WorkDone") {
 
   property("histo vs gcata") = {
 
-    forAll { list: List[Unit] =>
+    forAll { (list: List[Unit]) =>
       val sf = new Sketch()
       val sg = new Sketch()
 

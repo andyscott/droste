@@ -6,12 +6,12 @@ import _root_.reftree.core.ToRefTree
 
 import cats.Traverse
 
-import data.Attr
-import data.AttrF
-import data.Coattr
-import data.CoattrF
-import data.Fix
-import data.prelude._
+import higherkindness.droste.data.Attr
+import higherkindness.droste.data.AttrF
+import higherkindness.droste.data.Coattr
+import higherkindness.droste.data.CoattrF
+import higherkindness.droste.data.Fix
+import higherkindness.droste.data.prelude._
 
 object prelude {
 

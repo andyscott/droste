@@ -44,5 +44,6 @@ object Nu {
 
   implicit val drosteBasisSolveForNu: Basis.Solve.Aux[
     Nu,
-    λ[(F[_], α) => F[α]]] = null
+    ({ type L[F[_], A] = F[A] })#L
+  ] = null
 }
