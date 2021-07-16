@@ -15,5 +15,5 @@ addSbtPlugin("com.47deg"                 % "sbt-microsites"                % "1.
 addSbtPlugin("org.scalameta"             % "sbt-mdoc"                      % "2.2.20")
 addSbtPlugin("com.alejandrohdezma"       % "sbt-github"                    % "0.9.3")
 addSbtPlugin("com.alejandrohdezma"       % "sbt-github-mdoc"               % "0.9.3")
-addSbtPlugin("com.typesafe"              % "sbt-mima-plugin"               % "0.7.0")
+addSbtPlugin("com.typesafe"              % "sbt-mima-plugin"               % "0.9.2")
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat"                  % "0.1.20")
