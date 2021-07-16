@@ -12,7 +12,7 @@ addSbtPlugin("io.crashbox"               % "sbt-gpg"                       % "0.
 addSbtPlugin("com.github.gseitz"         % "sbt-release"                   % "1.0.13")
 addSbtPlugin("com.geirsson"              % "sbt-ci-release"                % "1.5.7")
 addSbtPlugin("com.47deg"                 % "sbt-microsites"                % "1.3.4")
-addSbtPlugin("org.scalameta"             % "sbt-mdoc"                      % "2.2.20")
+addSbtPlugin("org.scalameta"             % "sbt-mdoc"                      % "2.2.21")
 addSbtPlugin("com.alejandrohdezma"       % "sbt-github"                    % "0.9.3")
 addSbtPlugin("com.alejandrohdezma"       % "sbt-github-mdoc"               % "0.9.3")
 addSbtPlugin("com.typesafe"              % "sbt-mima-plugin"               % "0.7.0")
